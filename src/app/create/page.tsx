@@ -19,7 +19,7 @@ const MESSAGE_TEMPLATES: MessageTemplate[] = [
     icon: <Heart size={20} fill="currentColor" />,
     description: "Сэтгэл хөдөлгөм, романтик үг",
     build: ({ inviteeName, date, place }) => 
-      `Хайрт ${inviteeName} минь ❤️\n\n${date}-нд ${place} дээр чамтай цагийг өнгөрөөхийг маш их хүсч байна. Чиний нүдэнд харагдах дуртай, инээмсэглэл чинь миний өдрийг гэрэлтүүлдэг.💕`,
+      `Хайрт ${inviteeName} минь ❤️\n\n${date}-нд ${place} дээр чамтай цагийг өнгөрөөхийг маш их хүсч байна.💕`,
   },
   {
     id: "sweet",
@@ -27,7 +27,7 @@ const MESSAGE_TEMPLATES: MessageTemplate[] = [
     icon: <Smile size={20} />,
     description: "Эелдэг, найрсаг үг",
     build: ({ inviteeName, date, place }) => 
-      `Сайн уу ${inviteeName} 😊\n\n${date}-нд ${place} дээр уулзаж цай уух уу? Чамтай ярилцах дуртай, чамтай хамт байхад их баяртай байдаг. Хэрэв чөлөөтэй бол надтай хамт цаг өнгөрөөе!\n\nБаяртайгаар хүлээж байна ✨`,
+      `Сайн уу ${inviteeName} 😊\n\n${date}-нд ${place} дээр уулзаж цай уух уу? Чамтай ярилцах дуртай, чамтай хамт байхад их баяртай байдаг. Хэрэв чөлөөтэй бол надтай хамт цагыг өнгөөхүү?\n\nБаяртайгаар хүлээж байна ✨`,
   },
   {
     id: "casual",
@@ -35,7 +35,7 @@ const MESSAGE_TEMPLATES: MessageTemplate[] = [
     icon: <Coffee size={20} />,
     description: "Найзууд шиг, энгийн",
     build: ({ inviteeName, date, place }) => 
-      `Сайн уу ${inviteeName}! ☕\n\n${date}-нд ${place} дээр цай уух уу? Удаан уулзаагүй болчихоод байна. Чамтай сонин зүйлсийн талаар ярилцмаар санагдаж байна.\n\nУулзъя! 🙌`,
+      `Сайн уу ${inviteeName}! ☕\n\n${date}-нд ${place} дээр цай уух уу? Удаан уулзаагүй болчихоод байна. Чамтай сонин  хачин зүйлсийн талаар ярилцмаар санагдаж байна.\n\nУулзъя! 🙌`,
   },
   {
     id: "funny",
@@ -43,7 +43,7 @@ const MESSAGE_TEMPLATES: MessageTemplate[] = [
     icon: <Sparkles size={20} />,
     description: "Хөгжилтэй, инээдтэй үг",
     build: ({ inviteeName, date, place }) => 
-      `Хөөе ${inviteeName}! 🎉\n\n${date}-нд ${place} дээр уулзья! Надад чиний инээмсэглэл хэрэгтэй байна (би өөрийгөө инээлгэж чадахгүй байна 😅). Хамтдаа өнгөрүүлэх цаг бол хамгийн сайхан цаг!\n\nХүлээж байна аа! 😄`,
+      `Хөөе ${inviteeName}! 🎉\n\n${date}-нд ${place} дээр уулзья! Надад чиний инээмсэглэл хэрэгтэй байна (би өөрийгөө инээлгэж чадахгүй байна 😅). Хамтдаа өнгөрүүлэх цаг бол хамгийн сайхан цаг!\n\nХүлээж байя 😄`,
   },
   {
     id: "poetic",
@@ -51,7 +51,7 @@ const MESSAGE_TEMPLATES: MessageTemplate[] = [
     icon: <Star size={20} />,
     description: "Яруу, уран найраглал",
     build: ({ inviteeName, date, place }) => 
-      `${inviteeName} минь 🌟\n\n${date}-ны өдөр ${place} дээр,\nХамтдаа байх сайхан дурсамж бий болгъё.\nЧиний инээмсэглэл бол миний өдрийн гэрэл,\nЧамтай хамт байх нь миний аз жаргал.\n\nУулзъя 💫`,
+      `${inviteeName} минь 🌟\n\n${date}-ны өдөр ${place} дээр,\nХамтдаа сайхан дурсамжуудыг бий болгоё.\nЧиний инээмсэглэл бол миний өдрийн гэрэл,\nЧамтай хамт байх нь миний аз жаргал.\n\n 💫`,
   },
   {
     id: "simple",
@@ -196,10 +196,15 @@ export default function CreatePage() {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.05); }
         }
+        @keyframes fade-up {
+          0% { opacity: 0; transform: translateY(16px); }
+          100% { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-up { animation: fade-up 0.6s ease-out both; }
       `}</style>
 
       <div className="mx-auto max-w-3xl">
-        <div className="mb-6 text-center">
+        <div className="mb-6 text-center animate-fade-up">
           <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-rose-400 to-pink-500 shadow-lg animate-[pulse-slow_2s_ease-in-out_infinite]">
             <Heart className="text-white" size={32} fill="currentColor" />
           </div>
@@ -211,7 +216,11 @@ export default function CreatePage() {
           </p>
         </div>
 
-      <form onSubmit={onSubmit} className="relative overflow-hidden rounded-3xl bg-white shadow-2xl border border-rose-100 p-6 sm:p-8">
+      <form
+        onSubmit={onSubmit}
+        className="relative overflow-hidden rounded-3xl bg-white shadow-2xl border border-rose-100 p-6 sm:p-8 animate-fade-up"
+        style={{ animationDelay: "80ms" }}
+      >
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-100/40 to-purple-100/40 rounded-full blur-3xl -z-0" />
         <div className="absolute bottom-0 left-0 w-64 h-64 bg-gradient-to-tr from-pink-100/40 to-rose-100/40 rounded-full blur-3xl -z-0" />
         
@@ -234,7 +243,7 @@ export default function CreatePage() {
             <label className="grid gap-2">
               <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
                 <Heart size={16} className="text-pink-500" />
-                Нөгөө талын нэр
+                Урих хүний нэр
               </span>
               <input
                 value={state.inviteeName}
@@ -377,7 +386,10 @@ export default function CreatePage() {
       </form>
 
         {createdInviteId && sharePath ? (
-          <div className="relative overflow-hidden rounded-3xl bg-white shadow-2xl border border-emerald-200 p-6 sm:p-8 mt-6">
+          <div
+            className="relative overflow-hidden rounded-3xl bg-white shadow-2xl border border-emerald-200 p-6 sm:p-8 mt-6 animate-fade-up"
+            style={{ animationDelay: "120ms" }}
+          >
             <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-emerald-100/40 to-green-100/40 rounded-full blur-3xl" />
             
             <div className="relative z-10">

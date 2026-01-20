@@ -114,7 +114,6 @@ export default function DashboardPage() {
 
       <div className="relative overflow-hidden rounded-3xl bg-white shadow-2xl border border-rose-100 p-6 sm:p-8 mb-6">
         <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-rose-100/40 to-purple-100/40 rounded-full blur-3xl -z-0" />
-        
         <div className="relative z-10 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">

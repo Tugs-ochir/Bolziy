@@ -35,13 +35,37 @@ export default async function InvitePage({
   const status = wasSent ? "seen" : invite.status;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 p-4 sm:p-6 lg:p-8">
+    <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 p-4 sm:p-6 lg:p-8">
       <style>{`
         @keyframes pulse-slow {
           0%, 100% { transform: scale(1); }
           50% { transform: scale(1.05); }
         }
+        @keyframes float-slow {
+          0% { transform: translateY(0) rotate(0deg); opacity: 0.7; }
+          50% { transform: translateY(-10px) rotate(4deg); opacity: 1; }
+          100% { transform: translateY(0) rotate(-3deg); opacity: 0.9; }
+        }
+        .sticker {
+          animation: float-slow 6s ease-in-out infinite;
+          filter: drop-shadow(0 8px 18px rgba(0,0,0,0.08));
+        }
+        .sticker-delay-1 { animation-delay: 1s; }
+        .sticker-delay-2 { animation-delay: 2s; }
+        .sticker-delay-3 { animation-delay: 3s; }
       `}</style>
+
+      <div className="pointer-events-none absolute inset-0 -z-10">
+        <div className="sticker sticker-delay-1 absolute -left-4 top-16 rotate-6 rounded-2xl bg-white/70 px-4 py-3 text-3xl">
+          💖
+        </div>
+        <div className="sticker sticker-delay-2 absolute right-4 top-40 -rotate-3 rounded-2xl bg-white/70 px-4 py-3 text-3xl">
+          ✨
+        </div>
+        <div className="sticker sticker-delay-3 absolute left-10 bottom-16 rotate-2 rounded-2xl bg-white/70 px-4 py-3 text-3xl">
+          💌
+        </div>
+      </div>
 
       <div className="mx-auto max-w-2xl">
         <div className="mb-6 text-center">
