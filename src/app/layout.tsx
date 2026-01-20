@@ -14,7 +14,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Boilzy - Болзооны урилга",
+  title: "Bolziy - Болзооны урилга",
   description: "Болзооны урилга үүсгэж, илгээж, хариу хянах веб апп.",
 };
 
