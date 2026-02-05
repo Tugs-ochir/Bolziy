@@ -125,7 +125,7 @@ export default function InviteActions({
               <h4 className="text-lg font-bold text-emerald-900">Маш сайн!</h4>
             </div>
             <p className="text-emerald-800">
-              {senderName} Таны хариултанд баярлалаа. Болзоогоо амжилттай өнгөрөхийг хүсье! 💚
+              {senderName} Таны хариултанд баярлалаа.💚
             </p>
           </div>
         )}
@@ -139,7 +139,7 @@ export default function InviteActions({
               <h4 className="text-lg font-bold text-gray-900">Хариу илгээгдсэн</h4>
             </div>
             <p className="text-gray-700">
-              Таны хариулт {senderName}-д хүрлээ.
+              Таны хариулт {senderName}-д хариулт харагдана.
             </p>
           </div>
         )}
