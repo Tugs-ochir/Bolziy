@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from "next/link";
+import Footer from "@/components/Footer";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -28,7 +29,7 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <div className="min-h-dvh bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50">
+        <div className="flex min-h-dvh flex-col bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50">
           <header className="backdrop-blur-sm bg-white/80 border-b border-rose-100 shadow-sm sticky top-0 z-50">
             <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4">
               <Link href="/" className="flex items-center gap-2 group">
@@ -50,14 +51,15 @@ export default function RootLayout({
                   href="/dashboard"
                   className="rounded-lg px-4 py-2 text-gray-700 hover:bg-purple-100 hover:text-purple-700 transition-all"
                 >
-                  Dashboard
+                  Урилгын хариуг харах
                 </Link>
               </nav>
             </div>
           </header>
-          <main>
+          <main className="flex-1">
             {children}
           </main>
+          <Footer />
         </div>
       </body>
     </html>

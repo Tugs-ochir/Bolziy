@@ -55,7 +55,7 @@ export default function Home() {
                 className="w-full sm:w-auto rounded-xl border-2 border-gray-300 bg-white px-8 py-4 text-gray-700 font-semibold hover:bg-gray-50 hover:border-gray-400 transition-all duration-300 hover:scale-105 flex items-center justify-center gap-2"
               >
                 <BarChart3 size={20} />
-                Dashboard
+                Урилгын хариуг харах
               </Link>
             </div>
           </div>
@@ -68,7 +68,7 @@ export default function Home() {
               <div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-gradient-to-br from-purple-400 to-pink-500 shadow-md">
                 <span className="text-white text-xl font-bold">1</span>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Үүсгэнэ</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Үүсгэх</h3>
               <p className="text-sm text-gray-600">
                 Нэр, огноо, газар, мессежээ оруулаад урилга үүсгэнэ үү.
               </p>
@@ -81,7 +81,7 @@ export default function Home() {
               <div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-gradient-to-br from-pink-400 to-rose-500 shadow-md">
                 <span className="text-white text-xl font-bold">2</span>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Илгээнэ</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Илгээх</h3>
               <p className="text-sm text-gray-600">
                 Линк болон QR кодыг copy хийгээд илгээнэ үү.
               </p>
@@ -94,9 +94,9 @@ export default function Home() {
               <div className="inline-flex items-center justify-center w-12 h-12 mb-4 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 shadow-md">
                 <span className="text-white text-xl font-bold">3</span>
               </div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Хянана</h3>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Урилгын хариуг харах</h3>
               <p className="text-sm text-gray-600">
-                Урилгын төлөвийг Dashboard-с харна уу.
+                Урилгын төлөвийг харах уу.
               </p>
             </div>
           </div>

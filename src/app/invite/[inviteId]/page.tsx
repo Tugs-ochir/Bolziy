@@ -12,7 +12,8 @@ export default async function InvitePage({
   params: Promise<{ inviteId: string }>;
 }) {
   await connectToDatabase();
-  const { inviteId } = await params;
+  const { inviteId: rawId } = await params;
+  const inviteId = rawId?.trim().toUpperCase() ?? "";
 
   const invite = await InviteModel.findOne({ inviteId }).select({ _id: 0 }).lean();
   if (!invite) notFound();

@@ -41,7 +41,7 @@ function statusClass(status: InviteItem["status"]) {
 }
 
 export default function DashboardPage() {
-  const [senderName, setSenderName] = useState("");
+  const [inviteId, setInviteId] = useState("");
   const [invites, setInvites] = useState<InviteItem[]>([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -49,34 +49,55 @@ export default function DashboardPage() {
   const shareBase = typeof window !== "undefined" ? window.location.origin : "";
 
   useEffect(() => {
-    const saved = window.localStorage.getItem("boilzy_senderName");
-    if (saved) setSenderName(saved);
+    const saved = window.localStorage.getItem("boilzy_inviteId");
+    if (saved) setInviteId(saved);
   }, []);
 
   useEffect(() => {
-    if (!senderName) return;
-    window.localStorage.setItem("boilzy_senderName", senderName);
-  }, [senderName]);
+    if (!inviteId) return;
+    window.localStorage.setItem("boilzy_inviteId", inviteId);
+  }, [inviteId]);
 
-  const canLoad = useMemo(() => senderName.trim().length > 0, [senderName]);
+  const canLoad = useMemo(() => inviteId.trim().length > 0, [inviteId]);
 
   async function load() {
     if (!canLoad) return;
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`/api/invites?senderName=${encodeURIComponent(senderName)}`, {
+      const id = inviteId.trim().toUpperCase();
+      const res = await fetch(`/api/invites/${encodeURIComponent(id)}`, {
         cache: "no-store",
       });
       const json = (await res.json().catch(() => null)) as unknown;
       if (!res.ok || !json || typeof json !== "object") {
-        throw new Error("Урилгуудыг уншиж чадсангүй.");
+        if (res.status === 404) {
+          const debug = (json as { debug?: { totalInvites?: number } }).debug;
+          const total = debug?.totalInvites;
+          if (total === 0) throw new Error("Урилга олдсонгүй. Өгөгдлийн санд урилга байхгүй. Эхлээд Урилга үүсгэх хуудаснаас урилга үүсгэнэ үү.");
+          if (typeof total === "number" && total > 0) throw new Error(`Урилга олдсонгүй. Өгөгдлийн санд ${total} урилга байна. ID-ээ шалгаад дахин оролдоно уу.`);
+          throw new Error("Урилга олдсонгүй. ID-ээ шалгаад дахин оролдоно уу.");
+        }
+        throw new Error("Урилгыг олж чадсангүй.");
       }
-      const items = (json as { invites?: unknown }).invites;
-      if (!Array.isArray(items)) throw new Error("Урилгуудыг уншиж чадсангүй.");
-      setInvites(items as InviteItem[]);
+      const inv = (json as { invite?: unknown }).invite;
+      if (!inv || typeof inv !== "object") throw new Error("Урилга олдсонгүй.");
+      const raw = inv as Record<string, unknown>;
+      const viewNum = raw.viewCount;
+      const item: InviteItem = {
+        inviteId: String(raw.inviteId ?? id),
+        inviteeName: String(raw.inviteeName ?? ""),
+        createdAt: raw.createdAt != null ? String(raw.createdAt) : new Date().toISOString(),
+        status: (raw.status as InviteItem["status"]) ?? "sent",
+        viewCount: typeof viewNum === "number" && !Number.isNaN(viewNum) ? viewNum : 0,
+        date: raw.date != null ? String(raw.date) : "",
+        place: String(raw.place ?? ""),
+      };
+      setInvites([item]);
+      setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Алдаа гарлаа.");
+      setInvites([]);
     } finally {
       setLoading(false);
     }
@@ -105,10 +126,10 @@ export default function DashboardPage() {
             <Heart className="text-white" size={32} fill="currentColor" />
           </div>
           <h1 className="text-3xl sm:text-4xl font-bold bg-gradient-to-r from-rose-600 via-pink-600 to-purple-600 bg-clip-text text-transparent">
-            Dashboard
+            Урилгын хариуг харах
           </h1>
           <p className="mt-2 text-base text-gray-600">
-            Өөрийн үүсгэсэн урилгуудыг харна уу
+            Өөрийн үүсгэсэн урилгын хариуг харна уу
           </p>
         </div>
 
@@ -117,13 +138,14 @@ export default function DashboardPage() {
         <div className="relative z-10 grid gap-4 md:grid-cols-[1fr_auto] md:items-end">
           <label className="grid gap-2">
             <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
-              <User size={16} className="text-rose-500" />
-              Таны нэрээр хайх
+              <Search size={16} className="text-rose-500" />
+              Урилга ID-аар хайх
             </span>
             <input
-              value={senderName}
-              onChange={(e) => setSenderName(e.target.value)}
+              value={inviteId}
+              onChange={(e) => setInviteId(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && load()}
+              placeholder="Урилга ID оруулна уу"
               className="h-11 rounded-xl border-2 border-gray-200 px-4 outline-none focus:border-rose-400 focus:ring-2 focus:ring-rose-100 transition-all"
             />
           </label>
