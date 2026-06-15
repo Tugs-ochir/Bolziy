@@ -18,6 +18,25 @@ export default async function InvitePage({
   const invite = await InviteModel.findOne({ inviteId }).select({ _id: 0 }).lean();
   if (!invite) notFound();
 
+  // Төлбөр баталгаажаагүй урилгыг харуулахгүй (хуучин өгөгдөл paymentStatus-гүй бол зөвшөөрнө)
+  if (invite.paymentStatus && invite.paymentStatus !== "paid") {
+    return (
+      <div className="relative min-h-screen overflow-hidden bg-gradient-to-br from-rose-50 via-pink-50 to-purple-50 p-4 sm:p-6 lg:p-8">
+        <div className="mx-auto flex min-h-[70vh] max-w-md items-center justify-center">
+          <div className="relative overflow-hidden rounded-3xl bg-white shadow-2xl border border-amber-100 p-8 text-center">
+            <div className="inline-flex items-center justify-center w-16 h-16 mb-4 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg">
+              <Heart className="text-white" size={32} fill="currentColor" />
+            </div>
+            <h1 className="text-2xl font-bold text-gray-900 mb-2">Урилга идэвхжээгүй байна</h1>
+            <p className="text-gray-600">
+              Энэхүү урилга төлбөр баталгаажсаны дараа идэвхжинэ. Илгээгчтэйгээ холбогдоно уу. 💛
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
   const wasSent = invite.status === "sent";
   await InviteModel.updateOne(
     { inviteId },

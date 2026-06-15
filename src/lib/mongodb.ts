@@ -26,7 +26,13 @@ export async function connectToDatabase() {
     });
   }
 
-  cache.conn = await cache.promise;
+  try {
+    cache.conn = await cache.promise;
+  } catch (err) {
+    // Унасан promise-г цэвэрлэнэ — дараагийн хүсэлт дахин холбогдохыг оролдоно
+    cache.promise = null;
+    throw err;
+  }
   return cache.conn;
 }
 

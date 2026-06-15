@@ -63,10 +63,12 @@ export async function POST(req: Request) {
         place: parsed.data.place,
         message: parsed.data.message,
         status: "sent",
+        paymentStatus: "pending",
+        paymentAmount: 1000,
         viewCount: 0,
       });
 
-      return NextResponse.json({ inviteId }, { status: 201 });
+      return NextResponse.json({ inviteId, paymentStatus: "pending", paymentAmount: 1000 }, { status: 201 });
     } catch (err) {
       const maybeDup =
         err &&

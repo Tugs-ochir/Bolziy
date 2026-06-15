@@ -1,8 +1,17 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import QRCode from "qrcode";
-import { Heart, Sparkles, Send, Copy, Download, Link as LinkIcon, QrCode as QrCodeIcon, Smile, Coffee, Star, MessageCircle } from "lucide-react";
+import { Heart, Sparkles, Send, Copy, Download, Link as LinkIcon, QrCode as QrCodeIcon, Smile, Coffee, Star, MessageCircle, Landmark, CreditCard, CheckCircle2, Clock, XCircle, RefreshCw } from "lucide-react";
+
+type PaymentStatus = "pending" | "awaiting_confirmation" | "paid" | "rejected";
+
+const BANK_INFO = {
+  bankName: "Khaan Bank",
+  accountNumber: "5278160007",
+  accountName: "Б.Төгс-Очир",
+  amount: 1000,
+};
 
 type MessageTemplate = {
   id: string;
@@ -126,6 +135,10 @@ export default function CreatePage() {
   const [error, setError] = useState<string | null>(null);
   const [qrDataUrl, setQrDataUrl] = useState<string | null>(null);
   const [qrLoading, setQrLoading] = useState(false);
+  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus | null>(null);
+  const [checkingPayment, setCheckingPayment] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const pollRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   const currentTemplate = useMemo(
     () => MESSAGE_TEMPLATES.find((t) => t.id === state.selectedTemplate) || MESSAGE_TEMPLATES[0],
@@ -207,6 +220,7 @@ export default function CreatePage() {
       const inviteId = (json as { inviteId?: unknown }).inviteId;
       if (typeof inviteId !== "string") throw new Error("Урилга үүсгэж чадсангүй.");
       setCreatedInviteId(inviteId);
+      setPaymentStatus("pending");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Алдаа гарлаа.");
     } finally {
@@ -214,9 +228,69 @@ export default function CreatePage() {
     }
   }
 
+  async function onCheckPayment() {
+    if (!createdInviteId) return;
+    setCheckingPayment(true);
+    setError(null);
+    try {
+      const res = await fetch(`/api/invites/${encodeURIComponent(createdInviteId)}/check-payment`, {
+        method: "POST",
+      });
+      const json = (await res.json().catch(() => null)) as { paymentStatus?: PaymentStatus } | null;
+      if (!res.ok || !json?.paymentStatus) {
+        throw new Error("Төлбөр шалгахад алдаа гарлаа. Дахин оролдоно уу.");
+      }
+      setPaymentStatus(json.paymentStatus);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Алдаа гарлаа.");
+    } finally {
+      setCheckingPayment(false);
+    }
+  }
+
+  // Админ баталгаажуулсан эсэхийг хянах polling
+  useEffect(() => {
+    if (!createdInviteId || paymentStatus !== "awaiting_confirmation") {
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+      return;
+    }
+
+    let cancelled = false;
+    const poll = async () => {
+      try {
+        const res = await fetch(
+          `/api/invites/${encodeURIComponent(createdInviteId)}/payment-status`,
+          { cache: "no-store" },
+        );
+        const json = (await res.json().catch(() => null)) as { paymentStatus?: PaymentStatus } | null;
+        if (!cancelled && json?.paymentStatus && json.paymentStatus !== "pending") {
+          setPaymentStatus(json.paymentStatus);
+        }
+      } catch {
+        // дараагийн оролдлогод дахин шалгана
+      }
+    };
+
+    pollRef.current = setInterval(poll, 4000);
+    poll();
+
+    return () => {
+      cancelled = true;
+      if (pollRef.current) {
+        clearInterval(pollRef.current);
+        pollRef.current = null;
+      }
+    };
+  }, [createdInviteId, paymentStatus]);
+
   async function copy(text: string) {
     try {
       await navigator.clipboard.writeText(text);
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
     } catch {
       return;
     }
@@ -249,6 +323,7 @@ export default function CreatePage() {
           </p>
         </div>
 
+      {!createdInviteId && (
       <form
         onSubmit={onSubmit}
         className="relative overflow-hidden rounded-3xl bg-white shadow-2xl border border-rose-100 p-6 sm:p-8 animate-fade-up"
@@ -417,8 +492,148 @@ export default function CreatePage() {
           </button>
         </div>
       </form>
+      )}
 
-        {createdInviteId && sharePath ? (
+        {createdInviteId && paymentStatus && paymentStatus !== "paid" ? (
+          <div
+            className="relative overflow-hidden rounded-3xl bg-white shadow-2xl border border-amber-200 p-6 sm:p-8 mt-6 animate-fade-up"
+            style={{ animationDelay: "120ms" }}
+          >
+            <div className="absolute top-0 right-0 w-48 h-48 bg-gradient-to-br from-amber-100/40 to-rose-100/40 rounded-full blur-3xl" />
+
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-3 rounded-full bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg">
+                  <CreditCard className="text-white" size={24} />
+                </div>
+                <div>
+                  <h3 className="text-xl font-bold text-gray-900">Төлбөр төлөх</h3>
+                  <p className="text-sm text-gray-600">
+                    Урилга идэвхжихийн тулд төлбөрөө төлнө үү
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid gap-4">
+                <div className="p-3 rounded-xl bg-gradient-to-br from-rose-50 to-pink-50 border border-rose-100">
+                  <div className="text-xs font-semibold text-rose-700 mb-1 flex items-center gap-2">
+                    <Sparkles size={14} />
+                    Урилгын ID
+                  </div>
+                  <div className="text-lg font-bold text-gray-900">{createdInviteId}</div>
+                </div>
+
+                <div className="rounded-2xl border-2 border-amber-200 bg-gradient-to-br from-amber-50 to-orange-50 p-5">
+                  <div className="flex items-center gap-2 mb-4 text-amber-800 font-semibold">
+                    <Landmark size={18} />
+                    Төлбөрийн мэдээлэл
+                  </div>
+                  <dl className="grid gap-3 text-sm">
+                    <div className="flex items-center justify-between gap-4">
+                      <dt className="text-gray-600">Банк</dt>
+                      <dd className="font-semibold text-gray-900">{BANK_INFO.bankName}</dd>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <dt className="text-gray-600">Дансны дугаар</dt>
+                      <dd className="flex items-center gap-2 font-semibold text-gray-900">
+                        {BANK_INFO.accountNumber}
+                        <button
+                          type="button"
+                          onClick={() => copy(BANK_INFO.accountNumber)}
+                          className="rounded-md border border-amber-300 bg-white px-2 py-1 text-xs font-medium text-amber-700 hover:bg-amber-50 transition-all flex items-center gap-1"
+                        >
+                          <Copy size={12} />
+                          {copied ? "Хууллаа" : "Хуулах"}
+                        </button>
+                      </dd>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <dt className="text-gray-600">Дансны нэр</dt>
+                      <dd className="font-semibold text-gray-900">{BANK_INFO.accountName}</dd>
+                    </div>
+                    <div className="flex items-center justify-between gap-4 border-t border-amber-200 pt-3">
+                      <dt className="text-gray-600">Төлөх дүн</dt>
+                      <dd className="text-lg font-bold text-rose-600">
+                        {BANK_INFO.amount.toLocaleString("mn-MN")}₮
+                      </dd>
+                    </div>
+                  </dl>
+                  <p className="mt-4 text-xs text-amber-700">
+                    Гүйлгээний утга дээр <span className="font-bold">{createdInviteId}</span> гэж бичээрэй.
+                  </p>
+                </div>
+
+                {paymentStatus === "pending" ? (
+                  <button
+                    type="button"
+                    onClick={onCheckPayment}
+                    disabled={checkingPayment}
+                    className="group relative overflow-hidden rounded-xl bg-gradient-to-r from-amber-500 to-orange-600 px-6 py-4 text-white font-semibold shadow-lg hover:shadow-xl hover:shadow-amber-200 transition-all duration-300 hover:scale-[1.02] disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    <span className="relative z-10 flex items-center justify-center gap-2">
+                      {checkingPayment ? (
+                        <>
+                          <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                          Илгээж байна...
+                        </>
+                      ) : (
+                        <>
+                          <CreditCard size={20} />
+                          Төлбөр шалгах
+                        </>
+                      )}
+                    </span>
+                  </button>
+                ) : null}
+
+                {paymentStatus === "awaiting_confirmation" ? (
+                  <div className="rounded-xl border-2 border-blue-200 bg-blue-50 px-4 py-4">
+                    <div className="flex items-center gap-3 text-blue-800">
+                      <Clock size={20} className="flex-shrink-0 animate-pulse" />
+                      <div>
+                        <div className="font-semibold">Таны төлбөр шалгагдаж байна</div>
+                        <div className="text-sm text-blue-600">
+                          Админ баталгаажуулсны дараа урилга автоматаар идэвхжинэ. Та энэ хуудсаа нээлттэй байлгаарай.
+                        </div>
+                      </div>
+                    </div>
+                    <div className="mt-3 flex items-center gap-2 text-xs text-blue-500">
+                      <RefreshCw size={12} className="animate-spin" />
+                      Төлвийг автоматаар шалгаж байна...
+                    </div>
+                  </div>
+                ) : null}
+
+                {paymentStatus === "rejected" ? (
+                  <div className="grid gap-3">
+                    <div className="rounded-xl border-2 border-red-200 bg-red-50 px-4 py-4">
+                      <div className="flex items-center gap-3 text-red-800">
+                        <XCircle size={20} className="flex-shrink-0" />
+                        <div>
+                          <div className="font-semibold">Төлбөр баталгаажсангүй</div>
+                          <div className="text-sm text-red-600">
+                            Төлбөр амжилтгүй болсон байна. Гүйлгээгээ шалгаад дахин оролдоно уу.
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={onCheckPayment}
+                      disabled={checkingPayment}
+                      className="rounded-xl border-2 border-amber-300 bg-white px-6 py-3 text-amber-700 font-semibold hover:bg-amber-50 transition-all flex items-center justify-center gap-2 disabled:opacity-50"
+                    >
+                      <RefreshCw size={18} />
+                      Дахин шалгах
+                    </button>
+                  </div>
+                ) : null}
+              </div>
+            </div>
+          </div>
+        ) : null}
+
+        {createdInviteId && sharePath && paymentStatus === "paid" ? (
           <div
             className="relative overflow-hidden rounded-3xl bg-white shadow-2xl border border-emerald-200 p-6 sm:p-8 mt-6 animate-fade-up"
             style={{ animationDelay: "120ms" }}
@@ -428,11 +643,11 @@ export default function CreatePage() {
             <div className="relative z-10">
               <div className="flex items-center gap-3 mb-6">
                 <div className="p-3 rounded-full bg-gradient-to-br from-emerald-400 to-green-500 shadow-lg">
-                  <Sparkles className="text-white" size={24} />
+                  <CheckCircle2 className="text-white" size={24} />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Амжилттай үүслээ! 🎉</h3>
-                  <p className="text-sm text-gray-600">Урилгын линк бэлэн боллоо</p>
+                  <h3 className="text-xl font-bold text-gray-900">Төлбөр баталгаажлаа! 🎉</h3>
+                  <p className="text-sm text-gray-600">Таны урилга идэвхжиж, линк бэлэн боллоо</p>
                 </div>
               </div>
 
