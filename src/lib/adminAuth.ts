@@ -15,10 +15,19 @@ export function checkAdminAuth(req: Request): NextResponse | null {
     );
   }
 
-  const provided =
+  const raw =
     req.headers.get("x-admin-token") ??
     req.headers.get("authorization")?.replace(/^Bearer\s+/i, "") ??
     "";
+
+  // Client тал нь токеныг encodeURIComponent-ээр кодолж илгээдэг (header нь
+  // зөвхөн Latin-1 авдаг тул кирилл г.м тэмдэгтийг аюулгүй дамжуулна)
+  let provided = raw;
+  try {
+    provided = decodeURIComponent(raw);
+  } catch {
+    // кодлоогүй хуучин клиентийн хувьд түүхий утгыг ашиглана
+  }
 
   if (provided !== expected) {
     return NextResponse.json({ error: "Зөвшөөрөлгүй хандалт." }, { status: 401 });

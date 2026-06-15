@@ -70,7 +70,7 @@ export default function AdminPage() {
       setError(null);
       try {
         const res = await fetch(`/api/admin/invites?status=${encodeURIComponent(status)}`, {
-          headers: { "x-admin-token": tk },
+          headers: { "x-admin-token": encodeURIComponent(tk) },
           cache: "no-store",
         });
         const json = (await res.json().catch(() => null)) as
@@ -107,7 +107,7 @@ export default function AdminPage() {
     setLoading(true);
     try {
       const res = await fetch("/api/admin/invites?status=awaiting_confirmation", {
-        headers: { "x-admin-token": tk },
+        headers: { "x-admin-token": encodeURIComponent(tk) },
         cache: "no-store",
       });
       if (res.status === 401) throw new Error("Токен буруу байна.");
@@ -140,7 +140,7 @@ export default function AdminPage() {
     try {
       const res = await fetch(`/api/admin/invites/${encodeURIComponent(inviteId)}`, {
         method: "POST",
-        headers: { "content-type": "application/json", "x-admin-token": token },
+        headers: { "content-type": "application/json", "x-admin-token": encodeURIComponent(token) },
         body: JSON.stringify({ action }),
       });
       const json = (await res.json().catch(() => null)) as { error?: string } | null;

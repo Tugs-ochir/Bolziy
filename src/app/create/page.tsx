@@ -7,8 +7,8 @@ import { Heart, Sparkles, Send, Copy, Download, Link as LinkIcon, QrCode as QrCo
 type PaymentStatus = "pending" | "awaiting_confirmation" | "paid" | "rejected";
 
 const BANK_INFO = {
-  bankName: "Khaan Bank",
-  accountNumber: "5278160007",
+  bankName: "Голомт банк",
+  accountNumber: "IBAN 5800 1500 1105465364",
   accountName: "Б.Төгс-Очир",
   amount: 1000,
 };
