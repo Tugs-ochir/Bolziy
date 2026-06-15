@@ -99,11 +99,32 @@ export default function AdminPage() {
     if (authed && token) load(token, filter);
   }, [authed, token, filter, load]);
 
-  function onLogin(e: React.FormEvent) {
+  async function onLogin(e: React.FormEvent) {
     e.preventDefault();
-    if (!token.trim()) return;
-    window.localStorage.setItem("boilzy_admin_token", token.trim());
-    setAuthed(true);
+    const tk = token.trim();
+    if (!tk) return;
+    setError(null);
+    setLoading(true);
+    try {
+      const res = await fetch("/api/admin/invites?status=awaiting_confirmation", {
+        headers: { "x-admin-token": tk },
+        cache: "no-store",
+      });
+      if (res.status === 401) throw new Error("Токен буруу байна.");
+      const json = (await res.json().catch(() => null)) as
+        | { invites?: AdminInvite[]; error?: string }
+        | null;
+      if (!res.ok || !json?.invites) {
+        throw new Error(json?.error ?? "Нэвтэрч чадсангүй.");
+      }
+      window.localStorage.setItem("boilzy_admin_token", tk);
+      setInvites(json.invites);
+      setAuthed(true);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Алдаа гарлаа.");
+    } finally {
+      setLoading(false);
+    }
   }
 
   function onLogout() {
@@ -154,12 +175,18 @@ export default function AdminPage() {
               className="h-11 rounded-xl border-2 border-gray-200 px-4 outline-none focus:border-slate-400 focus:ring-2 focus:ring-slate-100 transition-all"
             />
           </label>
+          {error ? (
+            <div className="mb-4 rounded-xl border-2 border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700 font-medium">
+              ⚠️ {error}
+            </div>
+          ) : null}
           <button
             type="submit"
-            className="w-full rounded-xl bg-gradient-to-r from-slate-700 to-zinc-900 px-6 py-3 text-white font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2"
+            disabled={loading}
+            className="w-full rounded-xl bg-gradient-to-r from-slate-700 to-zinc-900 px-6 py-3 text-white font-semibold shadow-lg hover:shadow-xl transition-all hover:scale-[1.02] flex items-center justify-center gap-2 disabled:opacity-50"
           >
             <LogIn size={18} />
-            Нэвтрэх
+            {loading ? "Шалгаж байна..." : "Нэвтрэх"}
           </button>
         </form>
       </div>
